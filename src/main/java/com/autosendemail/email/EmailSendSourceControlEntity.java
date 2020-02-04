@@ -1,6 +1,4 @@
 package com.autosendemail.email;
-import lombok.Data;
-
 import javax.persistence.*;
 
 
