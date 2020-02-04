@@ -1,11 +1,15 @@
 package com.autosendemail.email;
+import lombok.Data;
+
 import javax.persistence.*;
+
 
 @Entity
 @Table(name = "EMAILS_SEND_SOURCE_CONTROL")
 @IdClass(EmailSendSourceControlPrimaryKey.class)
 
-public class EmailSendSourceControlEntity {
+
+class EmailSendSourceControlEntity {
     @Id
     @Column(name = "PLAN_DATE")
     private String plandate;

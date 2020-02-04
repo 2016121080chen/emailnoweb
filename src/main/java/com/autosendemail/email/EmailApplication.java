@@ -32,6 +32,9 @@ public class EmailApplication implements CommandLineRunner {
     @Autowired
     private EmailAutoSendConfigRepository emailAutoSendConfigRepository;
 
+    @Autowired
+    private EmailAppForCloudEmailBatch emailAppForCloudEmailBatch;
+
     public static void main(String[] args) {
         SpringApplication.run(EmailApplication.class, args);
     }
@@ -39,12 +42,12 @@ public class EmailApplication implements CommandLineRunner {
     @Override
     public void run(String... strings) throws Exception {
 
-        EmailAppRunableForCloudEmailBatch emailAppRunableForCloudEmailBatchSendGrid =
-                new EmailAppRunableForCloudEmailBatch(emailDbOperateForSend,emailBatchInfoService,
-                        emailSendSourceControlRepository,emailAutoSendConfigRepository, EmailSendServerType.SENDGRID);
-        Thread thread_sendMessageBatchSendGrid = new Thread(emailAppRunableForCloudEmailBatchSendGrid);
-        thread_sendMessageBatchSendGrid.start();
-        System.out.println("thread_sendMessageBatch=" +  thread_sendMessageBatchSendGrid.getPriority());
+//        EmailAppRunableForCloudEmailBatch emailAppRunableForCloudEmailBatchSendGrid =
+//                new EmailAppRunableForCloudEmailBatch(emailDbOperateForSend,emailBatchInfoService,
+//                        emailSendSourceControlRepository,emailAutoSendConfigRepository, EmailSendServerType.SENDGRID);
+//        Thread thread_sendMessageBatchSendGrid = new Thread(emailAppRunableForCloudEmailBatchSendGrid);
+//        thread_sendMessageBatchSendGrid.start();
+//        System.out.println("thread_sendMessageBatch=" +  thread_sendMessageBatchSendGrid.getPriority());
 
 //        Thread.sleep(10*1000);
 //
@@ -54,10 +57,10 @@ public class EmailApplication implements CommandLineRunner {
 //        Thread thread_sendMessageBatchMailGun = new Thread(emailAppRunableForCloudEmailBatchMailGun);
 //        thread_sendMessageBatchMailGun.start();
 //        System.out.println("thread_sendMessageBatchMailGun=" +  thread_sendMessageBatchMailGun.getPriority());
-
-
-
-
+        for(int i=0;i<20;i++) {
+            System.out.println("system:" + i);
+            emailAppForCloudEmailBatch.sendEmailBatchManyThread();
+        }
     }
 }
 
