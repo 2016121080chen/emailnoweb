@@ -1,18 +1,26 @@
 package com.autosendemail.email;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by wangshuai on 2018/2/14.
  */
 @Service
+@Transactional
 public class EmailBatchInfoService {
 
     @Autowired
     private EmailBatchInfoDao emailBatchInfoDao;
+
+    @Autowired
+    private EmailSendInfoDao emailSendInfoDao;
 
     @Autowired
     private EmailDbOperate emailDbOperate;
@@ -55,6 +63,21 @@ public class EmailBatchInfoService {
     public int updateBatchControl(String  emailBatch,String plandate,String isopen,String priority){
         return emailDbOperate.updateBatchControl(emailBatch,plandate,isopen,priority);
 
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void getSendAddrInfo(EmailSendAddrBean emailSendAddrBean){
+        System.out.println("线程" + Thread.currentThread().getName() + emailSendAddrBean.getEmailAddr());
+        List<EmailSendAddrBean> list = emailSendInfoDao.getSendAddrInfo(emailSendAddrBean);
+        EmailSendAddrBean emailSendAddrBean1 = list.get(0);
+        System.out.println("线程" + Thread.currentThread().getName() + emailSendAddrBean1.getEmailSendStatus());
+        System.out.println("线程" + Thread.currentThread().getName() + "query");
+        try {
+            emailSendInfoDao.updateEmailAddrInfo(emailSendAddrBean);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        System.out.println("线程" + Thread.currentThread().getName() + "update");
     }
 
 }

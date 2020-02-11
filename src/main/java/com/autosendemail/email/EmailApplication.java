@@ -57,10 +57,13 @@ public class EmailApplication implements CommandLineRunner {
 //        Thread thread_sendMessageBatchMailGun = new Thread(emailAppRunableForCloudEmailBatchMailGun);
 //        thread_sendMessageBatchMailGun.start();
 //        System.out.println("thread_sendMessageBatchMailGun=" +  thread_sendMessageBatchMailGun.getPriority());
-        for(int i=0;i<20;i++) {
+        for(int i=0;i<10;i++) {
             System.out.println("system:" + i);
             emailAppForCloudEmailBatch.sendEmailBatchManyThread();
         }
+
+
+
     }
 }
 

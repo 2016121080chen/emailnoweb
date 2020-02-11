@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -86,6 +88,7 @@ public class EmailDbOperate {
     }
 
     public List<Map<String, Object>> getEmailInfoList(String limitcount,boolean isBatchSet){
+        limitcount = "1";
         SimpleDateFormat dateFormater1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String datestr1 = dateFormater1.format(new Date());
         datestr1 = "邮件发送控制模块:" + datestr1+"  ";
@@ -95,7 +98,7 @@ public class EmailDbOperate {
 
         List<String> toEmails = new ArrayList();
         String sql = "SELECT * FROM EMAILS_SEND_TODAY WHERE SEND_STATUS IN ('00') " +
-                "AND EMAIL_VALIDATE_STATUS='01' ORDER BY EMAIL_LOAD_TIME ASC limit " + limitcount;
+                "AND EMAIL_VALIDATE_STATUS='01' ORDER BY EMAIL_LOAD_TIME ASC limit 1" + limitcount;
 
         if(isBatchSet){
             sql = "SELECT e.*,b.PRIORITY FROM EMAILS_SEND_TODAY e,EMAILS_BATCH_CONTROL b " +
@@ -622,7 +625,7 @@ public class EmailDbOperate {
         datestr1 = "邮件发送控制模块:" + datestr1+"  ";
 
         String sql = "UPDATE EMAILS_SEND_TODAY SET SEND_STATUS ='03',SEND_STATUS_DES='待处理' WHERE EMAIL_ADDR='"
-                + emailaddr + "'";
+                + emailaddr + "' AND SEND_STATUS='00'";
         System.out.println(datestr1 + sql);
 
         return jdbcTemplate.update(sql);
@@ -637,6 +640,71 @@ public class EmailDbOperate {
                 + emailaddr + "' AND SEND_STATUS='03'";
         System.out.println(datestr1 + sql);
 
+        return jdbcTemplate.update(sql);
+    }
+
+
+    public Map getEmailInfoOne(String emailaddr){
+        SimpleDateFormat dateFormater1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String datestr1 = dateFormater1.format(new Date());
+        datestr1 = "邮件发送控制模块:" + datestr1+"  ";
+
+        List<String> toEmails = new ArrayList();
+        String sql = "SELECT * FROM EMAILS_SEND_TODAY WHERE EMAIL_ADDR='" + emailaddr + "'";
+        System.out.println(datestr1 + sql);
+        List<Map<String, Object>> list = jdbcTemplate.queryForList(sql);
+        if(list.size()<=0){
+            return null;
+        }
+        Map<?, ?> map = list.get(0);
+        return map;
+    }
+
+    public String upDateEmailTransaction(String emailaddr){
+        String result = "normal";
+        Connection con = null;
+        try {
+            con=jdbcTemplate.getDataSource().getConnection();//设置不自动提交
+            con.setAutoCommit(false);
+            List<Map<String, Object>> list = jdbcTemplate.queryForList("SELECT * FROM EMAILS_SEND_TODAY WHERE EMAIL_ADDR='" + emailaddr + "' FOR UPDATE;");
+            if(list.size()>0){
+                Map<?, ?> map = list.get(0);
+                if(map.get("SEND_STATUS") != null) {
+                    String send_status = map.get("SEND_STATUS").toString();
+                    if("00".equalsIgnoreCase(send_status)) {
+                        String sql = "UPDATE EMAILS_SEND_TODAY SET SEND_STATUS ='03',SEND_STATUS_DES='待处理' WHERE EMAIL_ADDR='"
+                                + emailaddr + "'";
+                        jdbcTemplate.update(sql);
+                        return "normal";
+                    }else {
+                        return emailaddr;
+                    }
+                }
+
+            }
+            con.commit();
+            con.setAutoCommit(true);//还原
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                con.rollback();
+                con.setAutoCommit(true);
+                con.close();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+
+    public int upDateSourceControlFactCountTemp(EmailSourceBean emailSourceBean,String count,String sendway) {
+        SimpleDateFormat dateFormater1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String datestr1 = dateFormater1.format(new Date());
+        datestr1 = "========邮件发送控制模块:" + datestr1+"  ";
+        String sql = "UPDATE EMAILS_SEND_SOURCE_CONTROL SET FACT_SEND_TEMP_COUNT = FACT_SEND_TEMP_COUNT +" + count
+                + " WHERE PLAN_DATE='" + emailSourceBean.getPlan_date() + "' AND SEND_WAY='" + sendway + "'";
+        System.out.println(datestr1 + sql);
         return jdbcTemplate.update(sql);
     }
 
