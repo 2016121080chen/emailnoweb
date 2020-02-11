@@ -56,6 +56,7 @@ public class EmailAppForCloudEmailBatch{
             String is_open_Test = "0";
             int plan_send_count = 0;
             int fact_send_count = 0;
+            int fact_send_count1 = 0;
             int min = 0;
             int max = 0;
             String sendway = "";
@@ -91,6 +92,7 @@ public class EmailAppForCloudEmailBatch{
                 is_open = map.get("IS_OPEN").toString();
                 plan_send_count = Integer.parseInt(map.get("PLAN_SEND_COUNT").toString());
                 fact_send_count = Integer.parseInt(map.get("FACT_SEND_TEMP_COUNT").toString());
+                fact_send_count1 = Integer.parseInt(map.get("FACT_SEND_COUNT").toString());
                 min = Integer.parseInt(map.get("SLEEP_MINUTE_MIN").toString());
                 max = Integer.parseInt(map.get("SLEEP_MINUTE_MAX").toString());
                 sendway = map.get("SEND_WAY").toString();
@@ -117,6 +119,15 @@ public class EmailAppForCloudEmailBatch{
                 int fact_get_count = plan_send_count - fact_send_count;
 
                 if(fact_get_count <= 0){
+                    //处理实际发送笔数和临时发送笔数不一致的
+                    if(fact_send_count1 < fact_send_count) {
+                        EmailSourceBean sourceBean_temp1 = new EmailSourceBean();
+                        sourceBean_temp1.setPlan_date(datestr);
+                        sourceBean_temp1.setSend_source(sendway);
+                        emailDbOperateForSend.upDateSourceControlFactCountTempAll(sourceBean_temp1, String.valueOf(fact_send_count1), sendway);
+                        System.out.println(datestr1 + "当前时间：" + datestr + ",计划发送条数:" + plan_send_count + ",实际发送条数:" + fact_send_count1 + ",校队实际发送数据！");
+                        return;
+                    }
                     System.out.println(datestr1 + "当前时间：" + datestr + ",计划发送条数:" + plan_send_count + ",实际发送条数:" + fact_send_count + ",当天已发送完毕！");
                     try {
                         Thread.sleep(1000 * 60 * 2);

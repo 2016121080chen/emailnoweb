@@ -708,4 +708,15 @@ public class EmailDbOperate {
         return jdbcTemplate.update(sql);
     }
 
+
+    public int upDateSourceControlFactCountTempAll(EmailSourceBean emailSourceBean,String count,String sendway) {
+        SimpleDateFormat dateFormater1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String datestr1 = dateFormater1.format(new Date());
+        datestr1 = "========邮件发送控制模块:" + datestr1+"  ";
+        String sql = "UPDATE EMAILS_SEND_SOURCE_CONTROL SET FACT_SEND_TEMP_COUNT = " + count
+                + " WHERE PLAN_DATE='" + emailSourceBean.getPlan_date() + "' AND SEND_WAY='" + sendway + "'";
+        System.out.println(datestr1 + sql);
+        return jdbcTemplate.update(sql);
+    }
+
 }
